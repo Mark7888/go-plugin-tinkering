@@ -1,0 +1,127 @@
+basePath: /api/v1
+definitions:
+  api.callRequest:
+    properties:
+      message:
+        type: string
+    required:
+    - message
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: REST API for managing and calling hashicorp/go-plugin plugins
+  title: Go Plugin Tinkering API
+  version: "1.0"
+paths:
+  /plugins:
+    get:
+      description: Returns a list of all currently loaded plugin names
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              items:
+                type: string
+              type: array
+            type: object
+      summary: List loaded plugins
+      tags:
+      - plugins
+  /plugins/{name}/call:
+    post:
+      consumes:
+      - application/json
+      description: Calls the named plugin with the provided message and returns the
+        result
+      parameters:
+      - description: Plugin name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Message payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/api.callRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Call a plugin
+      tags:
+      - plugins
+  /plugins/load:
+    post:
+      description: Loads all plugins from the plugins directory
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Load all plugins
+      tags:
+      - plugins
+  /plugins/reload:
+    post:
+      description: Unloads and then reloads all plugins from the plugins directory
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Reload all plugins
+      tags:
+      - plugins
+  /plugins/unload:
+    post:
+      description: Shuts down and unloads all currently loaded plugins
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Unload all plugins
+      tags:
+      - plugins
+swagger: "2.0"
