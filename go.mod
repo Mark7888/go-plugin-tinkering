@@ -1,8 +1,6 @@
 module github.com/Mark7888/go-plugin-tinkering
 
-go 1.23.0
-
-toolchain go1.24.13
+go 1.25.0
 
 require (
 	github.com/gin-gonic/gin v1.9.1
