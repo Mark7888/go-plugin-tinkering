@@ -76,4 +76,3 @@ Open **http://localhost:8080/swagger/index.html** in your browser.
    go build -o plugins/my-plugin.myext ./cmd/my-plugin/
    ```
 5. Restart the app (or call `POST /api/v1/plugins/reload`).
-Testing hashicorp/go-plugin in an example project
