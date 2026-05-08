@@ -216,6 +216,8 @@ func (i *PluginInstance) Destroy() error {
 }
 
 // newUUID generates a random UUID v4 and returns an error if the random source fails.
+// Format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx  (8-4-4-4-12 hex digits)
+// where the version nibble is 0x4 and the variant bits are 0b10xx.
 func newUUID() (string, error) {
 	b := make([]byte, 16)
 	if _, err := rand.Read(b); err != nil {

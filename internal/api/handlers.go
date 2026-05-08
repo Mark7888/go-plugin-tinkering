@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -174,13 +175,12 @@ func DestroyInstance(m *pluginmanager.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
 
-		if _, ok := m.GetInstance(id); !ok {
-			c.JSON(http.StatusNotFound, gin.H{"error": "instance not found: " + id})
-			return
-		}
-
 		if err := m.DestroyInstance(id); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			if errors.Is(err, pluginmanager.ErrInstanceNotFound) {
+				c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			}
 			return
 		}
 

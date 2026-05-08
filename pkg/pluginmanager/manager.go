@@ -1,6 +1,7 @@
 package pluginmanager
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -18,6 +19,9 @@ const (
 	PluginsDir      = "./plugins"
 	PluginExtension = ".myext"
 )
+
+// ErrInstanceNotFound is returned when an instance UUID is not registered.
+var ErrInstanceNotFound = errors.New("instance not found")
 
 // LoadedPlugin holds the go-plugin client and factory handle for a running plugin.
 type LoadedPlugin struct {
@@ -189,6 +193,7 @@ func (m *Manager) GetInstance(id string) (*shared.PluginInstance, bool) {
 }
 
 // DestroyInstance destroys an instance by UUID and removes it from the registry.
+// Returns ErrInstanceNotFound if no instance with that ID is registered.
 func (m *Manager) DestroyInstance(id string) error {
 	m.mu.Lock()
 	entry, ok := m.instances[id]
@@ -198,7 +203,7 @@ func (m *Manager) DestroyInstance(id string) error {
 	m.mu.Unlock()
 
 	if !ok {
-		return fmt.Errorf("instance not found: %s", id)
+		return fmt.Errorf("%w: %s", ErrInstanceNotFound, id)
 	}
 	return entry.instance.Destroy()
 }
