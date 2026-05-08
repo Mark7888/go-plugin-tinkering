@@ -83,7 +83,7 @@
         },
         "/plugins/unload": {
             "post": {
-                "description": "Shuts down and unloads all currently loaded plugins",
+                "description": "Destroys all instances, shuts down, and unloads all currently loaded plugins",
                 "produces": [
                     "application/json"
                 ],
@@ -104,9 +104,158 @@
                 }
             }
         },
-        "/plugins/{name}/call": {
+        "/plugins/{name}/instances": {
+            "get": {
+                "description": "Returns the IDs of all live instances for the named plugin",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "instances"
+                ],
+                "summary": "List plugin instances",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Plugin name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
             "post": {
-                "description": "Calls the named plugin with the provided message and returns the result",
+                "description": "Creates a new independent instance of the named plugin with its own internal state",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "instances"
+                ],
+                "summary": "Create a plugin instance",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Plugin name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/plugins/{name}/instances/{id}": {
+            "delete": {
+                "description": "Calls Shutdown on the identified instance and removes it",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "instances"
+                ],
+                "summary": "Destroy a plugin instance",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Plugin name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Instance ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/plugins/{name}/instances/{id}/call": {
+            "post": {
+                "description": "Calls the identified instance with the provided message and returns the result",
                 "consumes": [
                     "application/json"
                 ],
@@ -114,14 +263,21 @@
                     "application/json"
                 ],
                 "tags": [
-                    "plugins"
+                    "instances"
                 ],
-                "summary": "Call a plugin",
+                "summary": "Call a plugin instance",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Plugin name",
                         "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Instance ID",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     },

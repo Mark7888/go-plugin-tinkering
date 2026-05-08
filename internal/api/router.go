@@ -18,7 +18,11 @@ func NewRouter(m *pluginmanager.Manager) *gin.Engine {
 		v1.POST("/plugins/unload", UnloadPlugins(m))
 		v1.POST("/plugins/reload", ReloadPlugins(m))
 		v1.GET("/plugins", ListPlugins(m))
-		v1.POST("/plugins/:name/call", CallPlugin(m))
+
+		v1.POST("/plugins/:name/instances", CreateInstance(m))
+		v1.GET("/plugins/:name/instances", ListInstances(m))
+		v1.POST("/plugins/:name/instances/:id/call", CallInstance(m))
+		v1.DELETE("/plugins/:name/instances/:id", DestroyInstance(m))
 	}
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

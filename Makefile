@@ -1,8 +1,9 @@
-.PHONY: build build-plugin build-all run swagger clean help
+.PHONY: build build-plugin build-counter-plugin build-all run swagger clean help
 
-BINARY   := bin/app
-PLUGIN   := plugins/sample.myext
-SWAG     := $(shell go env GOPATH)/bin/swag
+BINARY          := bin/app
+PLUGIN          := plugins/sample.myext
+COUNTER_PLUGIN  := plugins/counter.myext
+SWAG            := $(shell go env GOPATH)/bin/swag
 
 ## build: Build the main application binary
 build:
@@ -12,11 +13,15 @@ build:
 build-plugin:
 	go build -o $(PLUGIN) ./cmd/sample-plugin/
 
-## build-all: Build both the application and the sample plugin
-build-all: build build-plugin
+## build-counter-plugin: Build the counter plugin binary
+build-counter-plugin:
+	go build -o $(COUNTER_PLUGIN) ./cmd/counter-plugin/
 
-## run: Build the sample plugin then start the application
-run: build-plugin
+## build-all: Build the application and all plugin binaries
+build-all: build build-plugin build-counter-plugin
+
+## run: Build all plugins then start the application
+run: build-plugin build-counter-plugin
 	go run ./cmd/app/
 
 ## swagger: Generate swagger documentation

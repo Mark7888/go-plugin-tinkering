@@ -31,16 +31,121 @@ paths:
       summary: List loaded plugins
       tags:
       - plugins
-  /plugins/{name}/call:
-    post:
-      consumes:
-      - application/json
-      description: Calls the named plugin with the provided message and returns the
-        result
+  /plugins/{name}/instances:
+    get:
+      description: Returns the IDs of all live instances for the named plugin
       parameters:
       - description: Plugin name
         in: path
         name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              items:
+                type: string
+              type: array
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List plugin instances
+      tags:
+      - instances
+    post:
+      description: Creates a new independent instance of the named plugin with its
+        own internal state
+      parameters:
+      - description: Plugin name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a plugin instance
+      tags:
+      - instances
+  /plugins/{name}/instances/{id}:
+    delete:
+      description: Calls Shutdown on the identified instance and removes it
+      parameters:
+      - description: Plugin name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Instance ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Destroy a plugin instance
+      tags:
+      - instances
+  /plugins/{name}/instances/{id}/call:
+    post:
+      consumes:
+      - application/json
+      description: Calls the identified instance with the provided message and returns
+        the result
+      parameters:
+      - description: Plugin name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Instance ID
+        in: path
+        name: id
         required: true
         type: string
       - description: Message payload
@@ -76,9 +181,9 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Call a plugin
+      summary: Call a plugin instance
       tags:
-      - plugins
+      - instances
   /plugins/load:
     post:
       description: Loads all plugins from the plugins directory
@@ -111,7 +216,8 @@ paths:
       - plugins
   /plugins/unload:
     post:
-      description: Shuts down and unloads all currently loaded plugins
+      description: Destroys all instances, shuts down, and unloads all currently loaded
+        plugins
       produces:
       - application/json
       responses:
