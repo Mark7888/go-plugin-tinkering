@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"net/rpc"
+	"strings"
 	"sync"
 
 	"github.com/hashicorp/go-plugin"
@@ -79,7 +80,11 @@ func (s *factoryRPCServer) Create(_ *struct{}, resp *createResp) error {
 		resp.Error = err.Error()
 		return nil
 	}
-	id := newUUID()
+	id, err := newUUID()
+	if err != nil {
+		resp.Error = err.Error()
+		return nil
+	}
 	s.mu.Lock()
 	s.instances[id] = inst
 	s.mu.Unlock()
@@ -121,15 +126,20 @@ func (s *factoryRPCServer) Destroy(args *destroyArgs, resp *string) error {
 }
 
 // DestroyAll shuts down every instance in the plugin process.
+// All Shutdown errors are collected; the combined message is returned.
 func (s *factoryRPCServer) DestroyAll(_ *struct{}, resp *string) error {
 	s.mu.Lock()
 	instances := s.instances
 	s.instances = make(map[string]PluginBase)
 	s.mu.Unlock()
+	var errs []string
 	for _, inst := range instances {
-		if err := inst.Shutdown(); err != nil && *resp == "" {
-			*resp = err.Error()
+		if err := inst.Shutdown(); err != nil {
+			errs = append(errs, err.Error())
 		}
+	}
+	if len(errs) > 0 {
+		*resp = strings.Join(errs, "; ")
 	}
 	return nil
 }
@@ -205,11 +215,13 @@ func (i *PluginInstance) Destroy() error {
 	return nil
 }
 
-// newUUID generates a random UUID v4.
-func newUUID() string {
+// newUUID generates a random UUID v4 and returns an error if the random source fails.
+func newUUID() (string, error) {
 	b := make([]byte, 16)
-	_, _ = rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		return "", fmt.Errorf("generate UUID: %w", err)
+	}
 	b[6] = (b[6] & 0x0f) | 0x40 // version 4
 	b[8] = (b[8] & 0x3f) | 0x80 // variant RFC 4122
-	return fmt.Sprintf("%08x-%04x-%04x-%04x-%012x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
+	return fmt.Sprintf("%08x-%04x-%04x-%04x-%012x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16]), nil
 }
